@@ -19,23 +19,28 @@
 package me.thevipershow.koranplugin.data;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import me.thevipershow.koranplugin.factory.GSONKoranDeserializer;
 import me.thevipershow.koranplugin.structure.Koran;
 import me.thevipershow.koranplugin.structure.LANG;
+import org.apache.commons.io.FilenameUtils;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class DataManager {
-    private final HashSet<Koran> koranHashSet = new HashSet<>();
+    private final Set<Koran> koranHashSet = ConcurrentHashMap.newKeySet();
     private final JavaPlugin plugin;
     private static DataManager instance = null;
     private final DataWriter dataWriter;
     private final DataReader dataReader;
+    private final GSONKoranDeserializer gsonKoranDeserializer;
 
     private DataManager(JavaPlugin plugin) {
         this.plugin = plugin;
         dataReader = DataReader.getInstance(plugin);
         dataWriter = DataWriter.getInstance(plugin);
+        gsonKoranDeserializer = GSONKoranDeserializer.getInstance();
     }
 
     public static DataManager getInstance(JavaPlugin plugin) {
@@ -53,10 +58,37 @@ public final class DataManager {
     }
 
     public static File langToFile(LANG lang, JavaPlugin plugin) {
-        return new File(plugin.getDataFolder(), lang.getAbbrev() + "_koran.json");
+        return new File(plugin.getDataFolder(), lang.getAbbrev().toLowerCase(Locale.ROOT) + "_koran.json");
     }
 
-    public HashSet<Koran> getKoranHashSet() {
+    public Set<Koran> getKoranHashSet() {
         return koranHashSet;
+    }
+
+    private boolean noDirFilesMatch(LANG lang) {
+        File pluginDir = plugin.getDataFolder();
+        if (!pluginDir.exists())
+            return false;
+        return Arrays.stream(Objects.requireNonNull(pluginDir.listFiles()))
+                .noneMatch(file -> FilenameUtils.removeExtension(file.getName()).equalsIgnoreCase(lang.getAbbrev()));
+    }
+
+    public void downloadKoran(LANG lang) throws RuntimeException {
+        if (noDirFilesMatch(lang)) {
+            dataWriter.writeFromURL(lang);
+        }
+        throw new RuntimeException("That koran has already been downloaded before.");
+    }
+
+    public void loadKoran(LANG lang) throws RuntimeException {
+        if (koranHashSet.stream().noneMatch(koran -> koran.getLanguage() == lang)) {
+            if (langToFile(lang, plugin).exists()) {
+                dataReader.readData(lang).thenAcceptAsync(json ->
+                        gsonKoranDeserializer.createKoran(json, lang).thenAcceptAsync(koranHashSet::add));
+            } else {
+                throw new RuntimeException("That Koran has never been downloaded before.");
+            }
+        }
+        throw new RuntimeException("That Koran has already been loaded.");
     }
 }

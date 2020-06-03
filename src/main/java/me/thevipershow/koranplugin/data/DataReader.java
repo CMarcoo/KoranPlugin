@@ -18,12 +18,9 @@
 
 package me.thevipershow.koranplugin.data;
 
-import com.google.common.io.Files;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 import me.thevipershow.koranplugin.structure.LANG;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -48,7 +45,7 @@ public final class DataReader {
 
     public CompletableFuture<String> readData(LANG lang) {
         return CompletableFuture.supplyAsync(
-                ()->{
+                () -> {
                     try {
                         return readFromFile(lang);
                     } catch (IOException e) {

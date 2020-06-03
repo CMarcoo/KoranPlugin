@@ -35,9 +35,8 @@ public final class DataWriter {
     }
 
     public static synchronized DataWriter getInstance(JavaPlugin plugin) {
-        if (instance == null) {
+        if (instance == null)
             instance = new DataWriter(plugin);
-        }
         return instance;
     }
 

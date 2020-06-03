@@ -1,3 +1,4 @@
 koran:
   load-default:
     - "ENGLISH"
+    #- "ARABIC"

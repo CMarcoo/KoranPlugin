@@ -1,6 +1,9 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-apply plugin: 'java'
+plugins {
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'java'
+}
 
 group = 'me.thevipershow'
 version = '1.0-SNAPSHOT'
@@ -14,12 +17,19 @@ repositories {
         name = 'spigotmc-repo'
         url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
     }
+    maven { url = "https://repo.aikar.co/content/groups/aikar/" }
+}
+
+shadowJar {
+    relocate 'co.aikar.commands', 'me.thevipershow.koranplugin.acf'
+    relocate 'co.aikar.locales', 'me.thevipershow.koranplugin.locales'
 }
 
 dependencies {
     compileOnly 'org.bukkit:bukkit:1.15.2-R0.1-SNAPSHOT'
     // https://mvnrepository.com/artifact/commons-io/commons-io
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile "co.aikar:acf-bukkit:0.5.0-SNAPSHOT"
 }
 
 processResources {
