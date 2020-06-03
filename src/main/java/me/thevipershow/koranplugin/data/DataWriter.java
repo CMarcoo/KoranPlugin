@@ -40,13 +40,13 @@ public final class DataWriter {
         return instance;
     }
 
-    public CompletableFuture<Void> writeFromURL(LANG lang) {
+    public CompletableFuture<Void> writeFromURL(LANG lang) throws IOException {
         File toWrite = DataManager.langToFile(lang, plugin);
         if (!toWrite.exists())
-            toWrite.mkdirs();
+            toWrite.createNewFile();
         return CompletableFuture.runAsync(()->{
             try {
-                FileUtils.copyURLToFile(new URL(lang.getUrl()), toWrite, 3,3);
+                FileUtils.copyURLToFile(new URL(lang.getUrl()), toWrite);
             } catch (IOException e) {
                 plugin.getLogger().warning("Something has went wrong when reading Koran '" + lang.getAbbrev() + "'");
                 e.printStackTrace();

@@ -19,7 +19,9 @@
 package me.thevipershow.koranplugin.data;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import me.thevipershow.koranplugin.factory.GSONKoranDeserializer;
@@ -57,8 +59,14 @@ public final class DataManager {
                 .findFirst();
     }
 
+    public void makeDataFile() {
+        File dataFile = new File(plugin.getDataFolder(), "data");
+        if (!dataFile.exists())
+            dataFile.mkdirs();
+    }
+
     public static File langToFile(LANG lang, JavaPlugin plugin) {
-        return new File(plugin.getDataFolder(), lang.getAbbrev().toLowerCase(Locale.ROOT) + "_koran.json");
+        return new File(plugin.getDataFolder(), "data" + File.separatorChar + lang.getAbbrev().toLowerCase(Locale.ROOT) + "_koran.json");
     }
 
     public Set<Koran> getKoranHashSet() {
@@ -73,9 +81,14 @@ public final class DataManager {
                 .noneMatch(file -> FilenameUtils.removeExtension(file.getName()).equalsIgnoreCase(lang.getAbbrev()));
     }
 
-    public void downloadKoran(LANG lang) throws RuntimeException {
+    public CompletableFuture<Void> downloadKoran(LANG lang) throws RuntimeException {
         if (noDirFilesMatch(lang)) {
-            dataWriter.writeFromURL(lang);
+            try {
+                return dataWriter.writeFromURL(lang);
+            } catch (IOException yoException) {
+                plugin.getLogger().warning("Something has gone wrong while downloading the resource.");
+                yoException.printStackTrace();
+            }
         }
         throw new RuntimeException("That koran has already been downloaded before.");
     }
