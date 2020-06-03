@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 import me.thevipershow.koranplugin.factory.GSONKoranDeserializer;
 import me.thevipershow.koranplugin.structure.Koran;
 import me.thevipershow.koranplugin.structure.LANG;
@@ -56,13 +57,21 @@ public final class DataManager {
     public Optional<Koran> getKoran(LANG lang) {
         return koranHashSet.stream()
                 .filter(koran -> koran.getLanguage() == lang)
-                .findFirst();
+                .findAny();
     }
 
     public void makeDataFile() {
         File dataFile = new File(plugin.getDataFolder(), "data");
         if (!dataFile.exists())
             dataFile.mkdirs();
+    }
+
+    public String getLoadedKoran() {
+        File dataFile = new File(plugin.getDataFolder(), "data");
+        if (!dataFile.exists())
+            return "none";
+        return Arrays.stream(Objects.requireNonNull(dataFile.listFiles()))
+                .map(file -> FilenameUtils.removeExtension(file.getName())).collect(Collectors.joining(", "));
     }
 
     public static File langToFile(LANG lang, JavaPlugin plugin) {

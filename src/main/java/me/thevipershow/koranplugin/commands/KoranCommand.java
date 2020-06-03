@@ -22,8 +22,11 @@ import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import me.thevipershow.koranplugin.data.DataManager;
+import me.thevipershow.koranplugin.guards.Guard;
+import me.thevipershow.koranplugin.structure.Koran;
 import me.thevipershow.koranplugin.structure.LANG;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -60,6 +63,10 @@ public final class KoranCommand extends BaseCommand {
         sendMessage(sender, "&7/&ekoran download &8[&7koran&8]");
         sendMessage(sender, "&7This commands allows to load a Koran");
         sendMessage(sender, "&7/&ekoran load &8[&7koran&8]");
+        sendMessage(sender, "&7This commands allows to list every downloaded koran");
+        sendMessage(sender, "&7/&ekoran downloaded");
+        sendMessage(sender, "&7This commands allows to read a \"āya\" from a Koran");
+        sendMessage(sender, "&7/&ekoran read|lookup &8[&7koran&8] &8[&7sūre&8] &8[&7āya&8]");
     }
 
     @Subcommand("download")
@@ -68,12 +75,12 @@ public final class KoranCommand extends BaseCommand {
     @CommandPermission("koran.commands.download")
     public void onDownload(CommandSender sender, String arg) {
         try {
-            sendMessage(sender,  "&7Starting download. . .");
+            sendMessage(sender, "&7Starting download. . .");
             long then = System.currentTimeMillis();
             dataManager.downloadKoran(LANG.valueOf(arg.toUpperCase(Locale.ROOT)))
-                    .thenAccept((empty) -> {
+                    .thenAcceptAsync((empty) -> {
                         long now = (System.currentTimeMillis() - then) / 1_000_000;
-                        sendMessage(sender,  "&7Download has completed in &e" + now + " &7ms");
+                        sendMessage(sender, "&7Download has completed in &e" + now + " &7ms");
                     });
         } catch (IllegalArgumentException e) {
             sendMessage(sender, "&7The name of the Koran was invalid.");
@@ -87,6 +94,33 @@ public final class KoranCommand extends BaseCommand {
     @CommandCompletion("@available")
     @CommandPermission("koran.commands.available")
     public void onAvailable(CommandSender sender) {
-        sendMessage(sender, "&e" + Arrays.stream(LANG.values()).map(LANG::getAbbrev).collect(Collectors.joining(", ")));
+        sendMessage(sender, "&e" + Arrays.stream(LANG.values()).map(LANG::getAbbrev).collect(Collectors.joining("&7, &e")));
+    }
+
+    @Subcommand("downloaded|stored")
+    @Syntax("&8- &7Get all the downloaded Korans.")
+    @CommandPermission("koran.commands.downloaded")
+    public void onDownloaded(CommandSender sender) {
+        sendMessage(sender, "&e" + dataManager.getLoadedKoran());
+    }
+
+    @Subcommand("read")
+    @CommandAlias("lookup")
+    @Syntax("&8[&7Koran&8] &8[&7sūre&8] &8[&7āya&8] &8- &7Make a research in the Koran.")
+    @CommandPermission("koran.commands.read")
+    @CommandCompletion("@available @range:1-114 @range:1-125")
+    public void onRead(CommandSender sender, String koran, Integer surah, Integer aya) {
+        try {
+            LANG lang = Guard.toLang(koran);
+            Optional<Koran> koranOptional = dataManager.getKoran(lang);
+            if (koranOptional.isPresent()) {
+                Koran k = koranOptional.get();
+                String s = Guard.searchAya(k, surah, aya);
+                sendMessage(sender, "&7" + s);
+                // TODO: 04/06/2020 fix optional never being found 
+            }
+        } catch (IllegalArgumentException e) {
+            sendMessage(sender, e.getMessage());
+        }
     }
 }
