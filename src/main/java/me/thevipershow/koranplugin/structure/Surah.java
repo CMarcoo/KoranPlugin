@@ -28,8 +28,8 @@ public class Surah implements WordCounter {
         this.aja = ajaList;
     }
 
-    public Surah(Aja... ajas) {
-        this.aja = Arrays.asList(ajas);
+    public Surah(Aja... ajat) {
+        this.aja = Arrays.asList(ajat);
     }
 
     public List<Aja> getAja() {
