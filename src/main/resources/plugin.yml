@@ -1,6 +1,6 @@
 name: KoranPlugin
 version: @version@
 main: me.thevipershow.koranplugin.KoranPlugin
-api-version: 1.15.2
+api-version: '1.13'
 authors: [TheViperShow]
 description: A Minecraft plugin to interact with the Koran.

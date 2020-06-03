@@ -1,0 +1,3 @@
+koran:
+  load-default:
+    - "ENGLISH"
