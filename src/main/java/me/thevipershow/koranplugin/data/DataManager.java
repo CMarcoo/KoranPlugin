@@ -82,11 +82,14 @@ public final class DataManager {
     }
 
     private boolean noDirFilesMatch(LANG lang) {
-        File pluginDir = plugin.getDataFolder();
-        if (!pluginDir.exists())
+        File dataFile = new File(plugin.getDataFolder(), "data");
+        if (!dataFile.exists())
             return false;
-        return Arrays.stream(Objects.requireNonNull(pluginDir.listFiles()))
-                .noneMatch(file -> FilenameUtils.removeExtension(file.getName()).equalsIgnoreCase(lang.getAbbrev()));
+        for (File file : Objects.requireNonNull(dataFile.listFiles())) {
+            if (file.getName().toLowerCase(Locale.ROOT).contains(lang.getAbbrev()))
+                return true;
+        }
+        return false;
     }
 
     public CompletableFuture<Void> downloadKoran(LANG lang) throws RuntimeException {

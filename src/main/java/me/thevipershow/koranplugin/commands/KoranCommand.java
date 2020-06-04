@@ -76,10 +76,10 @@ public final class KoranCommand extends BaseCommand {
     public void onDownload(CommandSender sender, String arg) {
         try {
             sendMessage(sender, "&7Starting download. . .");
-            long then = System.currentTimeMillis();
+            long then = System.nanoTime();
             dataManager.downloadKoran(LANG.valueOf(arg.toUpperCase(Locale.ROOT)))
                     .thenAcceptAsync((empty) -> {
-                        long now = (System.currentTimeMillis() - then) / 1_000_000;
+                        long now = (System.nanoTime() - then) / 1_000_000;
                         sendMessage(sender, "&7Download has completed in &e" + now + " &7ms");
                     });
         } catch (IllegalArgumentException e) {
