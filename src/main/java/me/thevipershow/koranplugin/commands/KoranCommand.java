@@ -66,7 +66,7 @@ public final class KoranCommand extends BaseCommand {
         sendMessage(sender, "&7This commands allows to list every downloaded koran");
         sendMessage(sender, "&7/&ekoran downloaded");
         sendMessage(sender, "&7This commands allows to read a \"āya\" from a Koran");
-        sendMessage(sender, "&7/&ekoran read|lookup &8[&7koran&8] &8[&7sūre&8] &8[&7āya&8]");
+        sendMessage(sender, "&7/&ekoran read &8[&7koran&8] &8[&7sūre&8] &8[&7āya&8]");
     }
 
     @Subcommand("download")
@@ -97,7 +97,7 @@ public final class KoranCommand extends BaseCommand {
         sendMessage(sender, "&e" + Arrays.stream(LANG.values()).map(LANG::getAbbrev).collect(Collectors.joining("&7, &e")));
     }
 
-    @Subcommand("downloaded|stored")
+    @Subcommand("downloaded")
     @Syntax("&8- &7Get all the downloaded Korans.")
     @CommandPermission("koran.commands.downloaded")
     public void onDownloaded(CommandSender sender) {
@@ -105,7 +105,6 @@ public final class KoranCommand extends BaseCommand {
     }
 
     @Subcommand("read")
-    @CommandAlias("lookup")
     @Syntax("&8[&7Koran&8] &8[&7sūre&8] &8[&7āya&8] &8- &7Make a research in the Koran.")
     @CommandPermission("koran.commands.read")
     @CommandCompletion("@available @range:1-114 @range:1-125")
@@ -117,10 +116,33 @@ public final class KoranCommand extends BaseCommand {
                 Koran k = koranOptional.get();
                 String s = Guard.searchAya(k, surah, aya);
                 sendMessage(sender, "&7" + s);
-                // TODO: 04/06/2020 fix optional never being found 
+            } else {
+                sendMessage(sender, "&7Not found.");
             }
         } catch (IllegalArgumentException e) {
             sendMessage(sender, e.getMessage());
         }
+    }
+
+    @Subcommand("load")
+    @Syntax("&8[&7Koran&8] &8- &7Load a Koran into the plugin.")
+    @CommandPermission("koran.commands.load")
+    @CommandCompletion("@available")
+    public void onLoad(CommandSender sender, String koran) {
+        try {
+            sendMessage(sender, "&7Loading Koran . . . ");
+            LANG lang = Guard.toLang(koran);
+            dataManager.loadKoran(lang);
+            sendMessage(sender, "&7Successfully loaded Koran.");
+        } catch (RuntimeException e) {
+            sendMessage(sender, "&7" + e.getMessage());
+        }
+    }
+
+    @Subcommand("loaded")
+    @Syntax("&8- &7Look at all the loaded Korans.")
+    @CommandPermission("koran.commands.loaded")
+    public void onLoaded(CommandSender sender) {
+        sendMessage(sender, "&e" + dataManager.getKoranConcurrentList().stream().map(koran -> koran.getLanguage().getAbbrev()).collect(Collectors.joining("&7, &e")));
     }
 }

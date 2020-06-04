@@ -18,36 +18,33 @@
 
 package me.thevipershow.koranplugin.factory;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import me.thevipershow.koranplugin.structure.*;
 
 public final class GSONKoranDeserializer extends AbstractKoranDeserializer {
     private static GSONKoranDeserializer instance = null;
     private final Gson gson;
 
+    private final static JsonDeserializer<Koran> koranDeserializer = ((json, typeOfT, context) -> {
+        JsonArray array = json.getAsJsonArray();
+        Multimap<Integer, Aja> data = ArrayListMultimap.create(114, 100);
+        for (JsonElement jsonElement : array) {
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            int surahNumber = jsonObject.get("surah_number").getAsInt();
+            String aja = jsonObject.get("text").getAsString();
+            data.put(surahNumber, new Aja(aja));
+        }
+        List<Surah> r = new ArrayList<>();
+        data.keySet().forEach(i -> r.add(new Surah(data.get(i).parallelStream().collect(Collectors.toList()))));
+        return new KoranImplementation(r);
+    });
+
     private GSONKoranDeserializer() {
-        JsonDeserializer<Koran> koranDeserializer = ((json, typeOfT, context) -> {
-            JsonArray surahArray = json.getAsJsonArray();
-            List<Surah> suwar = new ArrayList<>();
-            List<Aja> ajat = new ArrayList<>();
-            int startSurahNumber = 1;
-            for (final JsonElement jsonElement : surahArray) {
-                JsonObject surahObj = jsonElement.getAsJsonObject();
-                Aja aja = new Aja(surahObj.get("text").getAsString());
-                int surahNumber = surahObj.get("surah_number").getAsInt();
-                if (surahNumber == startSurahNumber) {
-                    ajat.add(aja);
-                } else {
-                    suwar.add(new Surah(ajat));
-                    ajat.clear();
-                    startSurahNumber++;
-                }
-            }
-            return new KoranImplementation(suwar);
-        });
         this.gson = new GsonBuilder().registerTypeAdapter(Koran.class, koranDeserializer).create();
     }
 
@@ -59,9 +56,14 @@ public final class GSONKoranDeserializer extends AbstractKoranDeserializer {
     public CompletableFuture<Koran> createKoran(String jsonText, LANG lang) {
         return CompletableFuture.supplyAsync(
                 () -> {
-                    Koran koran = gson.fromJson(jsonText, Koran.class);
-                    koran.setLanguage(lang);
-                    return koran;
+                    try {
+                        Koran koran = gson.fromJson(jsonText, Koran.class);
+                        koran.setLanguage(lang);
+                        return koran;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
         );
     }

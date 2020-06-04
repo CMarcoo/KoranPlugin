@@ -28,6 +28,7 @@ compileJava {
 shadowJar {
     relocate 'co.aikar.commands', 'me.thevipershow.koranplugin.acf'
     relocate 'co.aikar.locales', 'me.thevipershow.koranplugin.locales'
+    archiveFileName.set('KoranPlugin-' + version + '.jar')
 }
 
 build.dependsOn shadowJar

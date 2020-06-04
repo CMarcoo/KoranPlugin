@@ -19,7 +19,7 @@
 package me.thevipershow.koranplugin.structure;
 
 public enum LANG {
-    ENGLISH("https://gist.githubusercontent.com/TheViperShow/d75245882ef00d47bf7838306038c96c/raw/916ab4c152da433f67a8fe6062a4c66f61395a89/KORAN_EN.json", "english"),
+    ENGLISH("https://gist.githubusercontent.com/TheViperShow/d75245882ef00d47bf7838306038c96c/raw/fdd4c1e70c0ea0600910730fbdada6650de303f6/KORAN_EN.json", "english"),
     ARABIC("https://gist.githubusercontent.com/TheViperShow/107fafc03abaea24edca3113b03afe62/raw/4aa132f1aa8967b4127ea9b367c1168801305723/KORAN_ARABIC.json", "arabic");
 
     private final String url, abbrev;
